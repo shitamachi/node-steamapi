@@ -29,32 +29,45 @@ import SteamAPI, {
 	Currency,
 	Language,
 } from './src/SteamAPI.js';
+import {
+	EnvConfig,
+	parseEnvContent,
+	getSteamApiKey,
+	loadEnvFromContent
+} from './src/env-utils.js';
+import SteamID from './src/steamid/index.js';
 
 export default SteamAPI;
 
 export {
 	// Options interfaces
-	GetGameNewsOptions,
-	GetUserOwnedGamesOptions,
-	SteamAPIOptions,
+	type GetGameNewsOptions,
+	type GetUserOwnedGamesOptions,
+	type SteamAPIOptions,
 
 	// Steam constants
-	Currency,
-	Language,
+	type Currency,
+	type Language,
 	ServerRegion,
 	UserPersonaState,
 
+	// Environment configuration (WASM compatible only)
+	type EnvConfig,
+	parseEnvContent,
+	getSteamApiKey,
+	loadEnvFromContent,
+
 	// Caching interface
-	CacheMap,
+	type CacheMap,
 
 	// Structures
-	AppBase,
-	AchievementPercentage,
+	type AppBase,
+	type AchievementPercentage,
 	NewsPost,
 	Server,
-	Country,
-	State,
-	City,
+	type Country,
+	type State,
+	type City,
 	Game,
 	GameDetails,
 	GameInfo,
@@ -70,7 +83,10 @@ export {
 	UserFriend,
 	UserServer,
 	UserServers,
-	UserStat,
+	type UserStat,
 	UserStats,
 	UserSummary,
+
+	// SteamID utilities
+	SteamID,
 };

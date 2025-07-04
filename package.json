@@ -1,14 +1,21 @@
 {
 	"author": "xDimGG <dimggyt@gmail.com> (https://dim.codes)",
 	"name": "steamapi",
-	"description": "A nice Steam API wrapper.",
+	"description": "A nice Steam API wrapper with WASM compatibility.",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
-	"version": "3.1.3",
+	"version": "3.1.4-wasm",
 	"license": "MIT",
 	"type": "module",
 	"scripts": {
-		"prepublish": "tsc",
+		"build": "npm run build:version && tsc",
+		"build:version": "node scripts/build-version.js",
+		"prepublish": "npm run build",
+		"test": "npm run test:node && npm run test:wasm",
+		"test:node": "node test/test.mjs",
+		"test:wasm": "vitest run --config vitest.config.ts",
+		"test:wasm:watch": "vitest --config vitest.config.ts",
+		"test:coverage": "vitest run --coverage --config vitest.config.ts",
 		"tsdoc": "typedoc --plugin typedoc-plugin-markdown --readme none --out docs index.ts"
 	},
 	"keywords": [
@@ -16,7 +23,11 @@
 		"api",
 		"wrapper",
 		"steam-api",
-		"steampowered"
+		"steampowered",
+		"wasm",
+		"webassembly",
+		"browser",
+		"universal"
 	],
 	"bugs": {
 		"web": "https://github.com/xDimGG/node-steamapi/issues"
@@ -27,14 +38,20 @@
 	},
 	"homepage": "https://github.com/xDimGG/node-steamapi#readme",
 	"devDependencies": {
-		"@types/node": "^20.11.5",
-		"@types/steamid": "^2.0.3",
+		"@vitest/coverage-v8": "^2.1.9",
+		"jsdom": "^25.0.1",
 		"typedoc": "^0.28.2",
 		"typedoc-plugin-markdown": "^4.6.2",
-		"typescript": "^5.7.3"
+		"typescript": "^5.7.3",
+		"vitest": "^2.1.5"
 	},
-	"dependencies": {
-		"node-fetch": "^3.3.2",
-		"steamid": "^2.0.0"
+	"engines": {
+		"node": ">=14.0.0"
+	},
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
 	}
 }

@@ -1,10 +1,10 @@
-import SteamID from 'steamid';
-import querystring from 'node:querystring';
+import SteamID from './steamid/index.js';
+import { version, name } from './version.js';
+import { safeWarn, encodeParams } from './wasm-utils.js';
+import { getSteamApiKey, type EnvConfig } from './env-utils.js';
 
-// https://stackoverflow.com/a/66726426/7504056
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-const Package = require('../../package.json');
+// Package info for User-Agent
+const Package = { version, name };
 
 import { CacheMap, MemoryCacheMap } from './Cache.js';
 import { fetch, assertApp, assertID } from './utils.js';
@@ -43,6 +43,14 @@ export interface SteamAPIOptions {
 	 * 'us' by default
 	 */
 	currency?: Currency;
+
+	/**
+	 * Environment configuration for WASM environments
+	 * 
+	 * In Node.js, this is optional as environment variables are read from process.env
+	 * In WASM environments, you can provide environment variables here
+	 */
+	envConfig?: EnvConfig;
 
 	/**
 	 * Custom headers to send for all API requests
@@ -190,19 +198,26 @@ export default class SteamAPI {
 
 	/**
 	 * Make a new SteamAPI Client
-	 * @param key Key to use for API calls. Key can be generated at https://steamcommunity.com/dev/apikey. If you want to make requests without a key, pass in false
+	 * @param key Key to use for API calls. Key can be generated at https://steamcommunity.com/dev/apikey. If you want to make requests without a key, pass in false. If undefined, will try to read from STEAM_API_KEY environment variable.
 	 * @param options Custom options for default language, HTTP parameters, and caching
 	 */
-	constructor(key: string | false, options: SteamAPIOptions = {}) {
+	constructor(key?: string | false, options: SteamAPIOptions = {}) {
 		if (key !== false) {
+			// If key is explicitly provided, use it
 			if (key) {
 				this.key = key;
 			} else {
-				console.warn([
-					'no key provided',
+				// Try to read from environment variables
+				const envKey = getSteamApiKey(options.envConfig);
+				if (envKey) {
+					this.key = envKey;
+				} else {
+					safeWarn([
+						'no key provided and STEAM_API_KEY environment variable not found',
 					'some methods won\'t work',
-					'get one from https://goo.gl/DfNy5s or initialize SteamAPI as new SteamAPI(false) to suppress this warning'
+						'get one from https://goo.gl/DfNy5s, set STEAM_API_KEY environment variable, or initialize SteamAPI as new SteamAPI(false) to suppress this warning'
 				].join('\n'));
+				}
 			}
 		}
 
@@ -230,9 +245,9 @@ export default class SteamAPI {
 	 * @param base Base API URL
 	 * @returns Parse JSON
 	 */
-	get(path: string, params: querystring.ParsedUrlQueryInput = {}, base = this.baseAPI): Promise<any> {
+	get(path: string, params: Record<string, any> = {}, base = this.baseAPI): Promise<any> {
 		if (this.key) params.key = this.key;
-		return fetch(`${base}${path}?${querystring.stringify(params)}`, this.headers);
+		return fetch(`${base}${path}?${encodeParams(params)}`, this.headers);
 	}
 
 	/**
@@ -511,7 +526,7 @@ export default class SteamAPI {
 	async getGameNews(app: number, options: GetGameNewsOptions = {}): Promise<NewsPost[]> {
 		assertApp(app);
 
-		const params: querystring.ParsedUrlQueryInput = {
+		const params: Record<string, any> = {
 			appid: app,
 			maxlength: options.maxContentLength,
 			enddate: options.endDate?.getTime(),
@@ -569,7 +584,7 @@ export default class SteamAPI {
 		if (opts.includeExtendedAppInfo)
 			opts.includeAppInfo = true;
 
-		const params: querystring.ParsedUrlQueryInput = {
+		const params: Record<string, any> = {
 			steamid: id,
 			include_appinfo: opts.includeAppInfo,
 			include_played_free_games: opts.includeFreeGames,

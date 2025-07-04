@@ -1,15 +1,15 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "Node 20",
-	"include": ["./**/*.ts"],
+  "display": "Pure WASM/Web Compatible - No Node.js Dependencies",
+  "include": ["index.ts", "src/**/*.ts"],
+  "exclude": ["test/**/*", "**/*.test.ts", "**/*.spec.ts"],
 
   "_version": "20.3.0",
 
   "compilerOptions": {
-    "lib": ["ES2023", "DOM"],
-    "types": ["node"],
-    "module": "NodeNext",
-    "target": "es2022",
+    "lib": ["ESNext", "DOM", "WebWorker"],
+    "module": "ESNext",
+    "target": "es2020",
     "outDir": "dist/",
     "declaration": true,
 
@@ -18,6 +18,9 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "NodeNext"
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "noEmitOnError": true
   }
 }

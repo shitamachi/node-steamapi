@@ -1,3 +1,5 @@
+import { safeDateNow } from './version.js';
+
 export interface CacheMap<K, V> {
 	get(key: K): V | undefined;
 	set(key: K, value: V): V;
@@ -19,7 +21,7 @@ export class MemoryCacheMap<K, V> implements CacheMap<K, V> {
 
 	get(key: K): V | undefined {
 		const val = this.map.get(key);
-		if (val && val.expiresAt <= Date.now()) {
+		if (val && val.expiresAt <= safeDateNow()) {
 			this.map.delete(key);
 			return;
 		}
@@ -29,7 +31,7 @@ export class MemoryCacheMap<K, V> implements CacheMap<K, V> {
 
 	set(key: K, value: V): V {
 		this.map.set(key, {
-			expiresAt: Date.now() + this.ttl,
+			expiresAt: safeDateNow() + this.ttl,
 			data: value,
 		});
 
